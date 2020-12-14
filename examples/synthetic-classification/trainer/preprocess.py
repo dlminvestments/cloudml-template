@@ -1,6 +1,3 @@
-import parameters
-import tensorflow as tf
-import numpy as np
 
 
 def extend_feature_columns(feature_columns):

@@ -1,6 +1,5 @@
 import argparse
 import os
-import json
 
 import tensorflow as tf
 from tensorflow.contrib.learn.python.learn import learn_runner

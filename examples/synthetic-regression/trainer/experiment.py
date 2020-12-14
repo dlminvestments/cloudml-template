@@ -2,7 +2,6 @@ import tensorflow as tf
 import metadata
 import model
 import input
-import parameters
 
 
 def get_eval_metrics():
