@@ -1,7 +1,6 @@
 import tensorflow as tf
 import featurizer
 import parameters
-import serving
 
 
 def create_classifier(config):
