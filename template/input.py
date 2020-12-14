@@ -32,7 +32,7 @@ def generate_text_input_fn(file_names,
           Tensors, and indices is a single Tensor of label indices.
     """
 
-    shuffle = True if mode == tf.contrib.learn.ModeKeys.TRAIN else False
+    shuffle = mode == tf.contrib.learn.ModeKeys.TRAIN
 
     filename_queue = tf.train.string_input_producer(
         file_names, num_epochs=num_epochs, shuffle=shuffle)
