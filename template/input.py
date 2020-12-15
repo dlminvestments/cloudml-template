@@ -75,6 +75,5 @@ def parse_label_column(label_string_tensor):
 def get_target(target):
     if metadata.TASK_TYPE == "classification":
         return parse_label_column(target)
-    else:
-        return target
+    return target
 
