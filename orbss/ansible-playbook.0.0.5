@@ -1,0 +1,205 @@
+# This code is licensed from CircleCI to the user under the MIT license.
+# See here for details: https://circleci.com/developer/orbs/licensing
+commands:
+  galaxy:
+    description: |
+      Execute ansible-galaxy install command
+    parameters:
+      galaxy-options:
+        default: ""
+        description: |
+          ansible-galaxy command options
+        type: string
+      galaxy-requirements-file:
+        default: ""
+        description: |
+          Ansible Galaxy requirements file path
+        type: string
+      galaxy-roles-path:
+        default: ""
+        description: |
+          ansible-galaxy command roles-path option
+        type: string
+    steps:
+    - run:
+        command: |
+          if [ -n  "<<parameters.galaxy-roles-path>>" ]; then
+            if [ ! -d ".ansible-galaxy-circleci" ]; then
+              mkdir .ansible-galaxy-circleci
+            fi
+            echo "-p <<parameters.galaxy-roles-path>>" > .ansible-galaxy-circleci/roles-path
+          else
+            if [ ! -d ".ansible-galaxy-circleci" ]; then
+              mkdir .ansible-galaxy-circleci
+            fi
+            touch .ansible-galaxy-circleci/roles-path
+          fi
+        name: Set Ansible galaxy role path option
+    - run:
+        command: |
+          if [ -n "<<parameters.galaxy-requirements-file>>" ]; then
+            if [ ! -n "<<parameters.galaxy-options>>" ]; then
+              ansible-galaxy install -r <<parameters.galaxy-requirements-file>> `cat .ansible-galaxy-circleci/roles-path`
+            else
+              echo "pamareter 'galaxy-options' and 'galaxy-role-path' cannot be specified at the same time."
+            fi
+          else
+            if [ -n "<<parameters.galaxy-options>>" ]; then
+              ansible-galaxy install <<parameters.galaxy-options>> `cat .ansible-galaxy-circleci/roles-path`
+            else
+              echo "No galaxy roles to be installed found"
+            fi
+          fi
+        name: Install Ansible galaxy roles
+  install:
+    description: |
+      Install Ansible
+    parameters:
+      version:
+        default: ""
+        description: |
+          Ansible version
+        type: string
+    steps:
+    - run:
+        command: |
+          export PIP=$(which pip pip3 | head -1)
+          if [[ -n $PIP ]]; then
+            if which sudo > /dev/null; then
+              if [ -n "<<parameters.version>>" ]; then
+                sudo $PIP install ansible==<<parameters.version>> --upgrade
+              else
+                sudo $PIP install ansible --upgrade
+              fi
+            else
+              if [ -n "<<parameters.version>>" ]; then
+                $PIP install ansible==<<parameters.version>> --upgrade --user
+              else
+                $PIP install ansible --upgrade --user
+              fi
+            fi
+          else
+            echo "Unable to install Ansible. Please install pip."
+            exit 1
+          fi
+        name: Install Ansible
+  playbook:
+    description: |
+      Execute ansible-playbook command
+    parameters:
+      inventory:
+        default: NONEXISTENT_ANSIBLE_INVENTORY
+        description: |
+          Ansible inventory file. The default value must be empty,
+          so do not register a value with a variable with this name.
+          The data must be registered in base64 format
+        type: env_var_name
+      inventory-parameters:
+        default: ""
+        description: |
+          Ansible inventory parameters
+        type: string
+      playbook:
+        description: |
+          The path of Ansible playbook
+        type: string
+      playbook-options:
+        default: ""
+        description: |
+          Ansible-playbook command options
+        type: string
+      private-key:
+        default: NONEXISTENT_ANSIBLE_SSH_KEY
+        description: |
+          SSH private key file. The default value must be empty,
+          so do not register a value with a variable with this name.
+          The data must be registered in base64 format
+        type: env_var_name
+    steps:
+    - run:
+        command: |
+          if [ -n "`echo $<<parameters.inventory>>`" ]; then
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            echo $<<parameters.inventory>> | base64 -d > .ansible-playbook-circleci/inventory-file
+            echo "-i .ansible-playbook-circleci/inventory-file" > .ansible-playbook-circleci/inventory
+          else
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            touch .ansible-playbook-circleci/inventory
+          fi
+        name: Set invetory
+    - run:
+        command: |
+          if [ -n "<<parameters.inventory-parameters>>" ]; then
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            echo "<<parameters.inventory-parameters>>" > .ansible-playbook-circleci/inventory-parameters
+          else
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            touch .ansible-playbook-circleci/inventory-parameters
+          fi
+        name: Set inventory parameters
+    - run:
+        command: |
+          if [ -n  "<<parameters.playbook-options>>" ]; then
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            echo <<parameters.playbook-options>> > .ansible-playbook-circleci/playbook-options
+          else
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            touch .ansible-playbook-circleci/playbook-options
+          fi
+        name: Set command options
+    - run:
+        command: |
+          if [ -n "$<<parameters.private-key>>" ]; then
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            echo $<<parameters.private-key>> | base64 -d > .ansible-playbook-circleci/private-key
+            chmod 700 .ansible-playbook-circleci
+            chmod 600 .ansible-playbook-circleci/private-key
+            echo '--private-key .ansible-playbook-circleci/private-key' > .ansible-playbook-circleci/private-key-params
+          else
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
+            fi
+            touch .ansible-playbook-circleci/private-key-params
+          fi
+        name: Set private key
+    - run:
+        command: |
+          # Execute ansible-playbook command
+          ansible-playbook `cat .ansible-playbook-circleci/inventory` \
+          `cat .ansible-playbook-circleci/inventory-parameters` \
+          `cat .ansible-playbook-circleci/private-key-params` \
+          `cat .ansible-playbook-circleci/playbook-options` \
+          <<parameters.playbook>>
+        name: Execute
+description: |
+  Execute ansible-playbook command
+display:
+  source_url: https://github.com/circleci-orbs-tm/ansible-playbook
+executors:
+  default:
+    description: |
+      The Debian-based Docker container
+    docker:
+    - image: circleci/python:<<parameters.python-version>>-<<parameters.debian-release>>
+    parameters:
+      debian-release:
+        default: stretch
+        type: string
+      python-version:
+        default: "2.7"
+        type: string
+version: 2.1
