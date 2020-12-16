@@ -1,1 +1,65 @@
- 
+ jobs:
+  create-update:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - kubernetes/create-or-update-resource:
+          get-rollout-status: true
+          resource-file-path: tests/nginx-deployment/deployment.yaml
+          resource-name: deployment/nginx-deployment
+          show-kubectl-command: true
+orbs:
+  kubernetes: circleci/kubernetes@x.y.z
+version: 2.1
+
+jobs:
+  update:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - kubernetes/update-container-image:
+          container-image-updates: 'nginx=nginx:1.9.1'
+          get-rollout-status: true
+          record: true
+          resource-name: deployment/nginx-deployment
+orbs:
+  kubernetes: circleci/kubernetes@x.y.z
+version: 2.1
+
+jobs:
+  build:
+    macos:
+      xcode: '9.0'
+    steps:
+      - checkout
+      - kubernetes/install
+orbs:
+  kubernetes: circleci/kubernetes@x.y.z
+version: 2.1
+
+jobs:
+  build:
+    macos:
+      xcode: '9.0'
+    steps:
+      - checkout
+      - kubernetes/install-kubeconfig:
+          kubeconfig: KUBECONFIG_DATA
+orbs:
+  kubernetes: circleci/kubernetes@1.0.0
+version: 2.1
+
+jobs:
+  build:
+    macos:
+      xcode: '9.0'
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+orbs:
+  kubernetes: circleci/kubernetes@x.y.z
+version: 2.1
