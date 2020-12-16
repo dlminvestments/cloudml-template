@@ -1,23 +1,30 @@
-ription: >
-  Installs nexploit-cli util to the environment. You need this util for  working
-  with nexploit API. `nexploit-cli` requires Node v12 to be installed.
-steps:
-  - run:
-      name: Install nexploit-cli
-      command: |
-        if which npm > /dev/null
-        then
-          if which nexploit-cli > /dev/null
-            then
-              echo "nexploit-cli is already installed"
-            else
-              npm config set registry http://registry.npmjs.org/
-              npm install @neuralegion/nexploit-cli -g
-            fi
-        else
-          echo "You need to install Node v12"
-          exit 1
-        fi
+
+orbs:
+  nexploit: neuralegion/nexploit@2.0
+jobs:
+  build:
+    machine: true
+    steps:
+      - nexploit/scan:
+          scan_name: CircleCI Scan
+          api_key: NEXPLOIT_API_KEY
+          discovery_types: crawler
+          crawlers: 'https://www.random1.org/,https://www.random2.org/'
+          host_filters: 'random1.org,random2.org'
+          headers: 'Content-Type: application/json;Keep-Alive: timeout=5, max=1000'
+          type: appscan
+          protocol: http
+
+9
+version: 2.1
+orbs:
+  nexploit: neuralegion/nexploit@2.0
+workflows:
+  your-workflow:
+    jobs:
+      - nexploit/retest-and-poll:
+          scan_id: 7MeuiCeFc25WdJBamaaTG
+          api_key: NEXPLOIT_API_KEY
 
 56
 description: |
