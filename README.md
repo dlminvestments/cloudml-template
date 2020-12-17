@@ -39,3 +39,6 @@ and 3) deploy the model on GCP as well as to make prediction (inference) using t
 
 * **deep_columns** = *dense_columns* + *indicator_columns* + *embedding_columns*
 * **wide_columns** = *categorical_columns* + *sparse_columns*
+
+
+<img src="https://img.shields.io/badge/TensorFlow%20-%23FF6F00.svg?&style=for-the-badge&logo=TensorFlow&logoColor=white" />
