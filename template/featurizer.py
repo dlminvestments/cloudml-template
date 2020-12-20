@@ -83,7 +83,7 @@ def get_deep_and_wide_columns(feature_columns, embedding_size=0, use_indicators=
     if use_indicators:
 
         indicator_columns = list(
-            map(lambda column: tf.feature_column.indicator_column(column),
+            map(tf.feature_column.indicator_column,
                 categorical_columns)
         )
 
