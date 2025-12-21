@@ -4,3 +4,4 @@ pandas
 numpy
 google-api-python-client
 oauth2client
+urllib3>=2.6.0 # not directly required, pinned by Snyk to avoid a vulnerability
